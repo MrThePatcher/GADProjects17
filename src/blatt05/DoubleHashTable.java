@@ -18,7 +18,7 @@ public class DoubleHashTable<K, V> {
 	private int size;
 	int colissions;
 	int maxRehashes;
-	DoubleHashable hashable;
+	DoubleHashable<K> hashable;
 
 	/**
 	 * Diese Methode implementiert h(x, i).
@@ -32,7 +32,7 @@ public class DoubleHashTable<K, V> {
 	 */
 	private int hash(K key, int i) {
 		// h(x,i)=h(x)+i*h'(x)
-		int outp=(int) ((hashable.hash(key) + i * hashable.hashTick(key)) % size);
+		int outp = (int) ((hashable.hash(key) + i * hashable.hashTick(key)) % size);
 		return outp;
 	}
 
@@ -46,13 +46,17 @@ public class DoubleHashTable<K, V> {
 	 *            Fabrik, die aus einer Größe ein DoubleHashable<K>-Objekt
 	 *            erzeugt.
 	 */
+	@SuppressWarnings("unchecked")
 	public DoubleHashTable(int primeSize, HashableFactory<K> hashableFactory) {
-		this.size=primeSize;
-		this.hashable=hashableFactory.create(size);
-		this.vArray=(V[])Array.newInstance(vArray.getClass(), size);
-		this.colissions=0;
-		this.maxRehashes=0;
-		
+		this.size = primeSize;
+		this.hashable = hashableFactory.create(size);
+		// irgendeine Speicherform fuer sowas muss her. Wenn das klappt sollte alles klappen
+		//wieso ist hier Nullpointer exception?
+		final V[] tmp = (V[]) Array.newInstance(vArray.getClass(), size);
+		this.vArray=tmp;
+		this.colissions = 0;
+		this.maxRehashes = 0;
+
 	}
 
 	/**
@@ -69,11 +73,9 @@ public class DoubleHashTable<K, V> {
 	public boolean insert(K k, V v) {
 		int position = -1;
 		if (k instanceof Integer) {
-			// Integer
-			hashable = new DoubleHashInt(vArray.length);
 			if (vArrayFull(position)) {// ist die Hashtabelle voll?
 				for (int i = 0; i < vArray.length; i++) {
-					position= hash(k,i);
+					position = hash(k, i);
 					if (isFree(position)) {// ist der Platz schon besetzt?
 						vArray[position] = v;
 						elements++;
@@ -82,28 +84,12 @@ public class DoubleHashTable<K, V> {
 						colissions++;
 						// nix nochmal schleife
 					}
-					if(i>this.maxRehashes){
-						this.maxRehashes=i;
+					if (i > this.maxRehashes) {
+						this.maxRehashes = i;
 					}
 				}
-			}
-			return true;
-		} else if (k instanceof String) {
-			// String
-			hashable = new DoubleHashString(vArray.length);
-			if (vArrayFull(position)) {
-				for (int i = 0; i < vArray.length; i++) {
-					position = hash(k,i);
-
-					if (isFree(position)) {
-						vArray[position] = v;
-						elements++;
-						break;
-					} else {
-						colissions++;
-						// nix nochmal schleife
-					}
-				}
+			} else {
+				return false;
 			}
 			return true;
 		} else {
@@ -140,30 +126,27 @@ public class DoubleHashTable<K, V> {
 	public Optional<V> find(K k) {
 		// was hier getan werden muss ist also nur den Key zu hashen und
 		// zurueckzugeben?
-		DoubleHashable hashable;
-		Optional<V> outp;
+		Optional<V> outp=null;
 		int position = -1;
-		if (k instanceof Integer) {
-			hashable = new DoubleHashInt(vArray.length);
+		for (int i = 0; i < size; i++) {
 			// h(x,i)=h(x)+i*h'(x)
-			//i*h'(x) faellt weg da ich ja nich weiss wie oft ich im vorhinein hashen musste
-			//allein vom key weiss ich value ja nicht
-			position = (int) ((hashable.hash(k)) % size);
+			position = hash(k,i);
 			V item = vArray[position];
-			outp = (Optional<V>) item;
-			return outp;
-		} else if (k instanceof String) {
-			hashable = new DoubleHashString(vArray.length);
-			// h(x,i)=h(x)+i*h'(x)
-			position = (int) ((hashable.hash(k)) % size);
-			V item = vArray[position];
-			outp = (Optional<V>) item;
-			return outp;
-		} else {
-			//Optional darf ja null haben ist ja vielleicht auch null
-			return null;
+			if(getkey(item)==k){
+				outp = (Optional<V>) item;
+				break;
+			}else{
+			}
 		}
+		
+		return outp;
 
+	}
+
+	private K getkey(V v) {
+		// wenn es eine zuordnung gaebe dann berechnet man hier aus value halt den key
+		// in diesen faellen gibt es pro value nur einen key aber ein key kann ja mehreren value zugeordnet sein
+		return null;
 	}
 
 	/**

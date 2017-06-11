@@ -26,6 +26,7 @@ public class DoubleHashInt implements DoubleHashable<Integer> {
 	 *            die Größe der Hashtabelle
 	 */
 	public DoubleHashInt(int size) {
+		//Vorbild aus Blatt 04;
 		random = new Random();
 		this.a = new ArrayList<>();
 		this.size = size;
@@ -41,15 +42,15 @@ public class DoubleHashInt implements DoubleHashable<Integer> {
 	}
 
 	private int extract(int compIndex, byte[] bytes) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		int fromByte = (w * compIndex) / 8;
 		int dw = 0;
-		// Zunächst extrahieren wir bis zu 4 Bytes vom String
 		for (int i = 0; i + fromByte < bytes.length && i < 8; i++)
 			dw |= (int) bytes[i + fromByte] << (24 - 8 * i);
 		int preceedingBits = (w * compIndex) % 8;
-		// Nun schieben wir den Ausschnitt ganz nach vorne
 		dw >>= (32 - preceedingBits - w);
-		// Schließlich entfernen wir störende Bits vor den Daten
 		dw &= (1 << w) - 1;
 		return dw;
 	}
@@ -63,6 +64,9 @@ public class DoubleHashInt implements DoubleHashable<Integer> {
 	 */
 	@Override
 	public long hash(Integer key) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		byte[] bytes = intToByte(key);
 		synchronized (a) {
 			while ((a.size() * w + 7) / 8 < bytes.length) {
@@ -83,6 +87,9 @@ public class DoubleHashInt implements DoubleHashable<Integer> {
 	 */
 	@Override
 	public long hashTick(Integer key) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		byte[] bytes = intToByte(key);
 		synchronized (a) {
 			this.a = new ArrayList<>();
@@ -90,8 +97,11 @@ public class DoubleHashInt implements DoubleHashable<Integer> {
 				a.add((long) random.nextInt(size));
 			}
 		}
+		/*
+		 * anpassen von modulo und es muss mit i multipliziert werden aber 'i' mul kommt dann wsl ausserhalb dieser klasse
+		 */
 		long hash = LongStream.range(0, (bytes.length * 4)).map(i -> extract((int) i, bytes) * a.get((int) i)).sum()
-				% size;
+				% (size-1);
 		return hash;
 	}
 

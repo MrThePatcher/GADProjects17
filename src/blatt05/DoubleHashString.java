@@ -25,25 +25,26 @@ public class DoubleHashString implements DoubleHashable<String> {
 	 *            die Größe der Hashtabelle
 	 */
 	public DoubleHashString(int size) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		random = new Random();
 		this.a = new ArrayList<>();
 		this.size = size;
-		// 2er-Logarithmus berechnen
 		for (size >>= 1; size > 0; size >>= 1)
 			this.w++;
-		// assert(this.w <= 30);
 	}
 
 	private int extract(int compIndex, byte[] bytes) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		int fromByte = (w * compIndex) / 8;
 		int dw = 0;
-		// Zunächst extrahieren wir bis zu 4 Bytes vom String
 		for (int i = 0; i + fromByte < bytes.length && i < 8; i++)
 			dw |= (int) bytes[i + fromByte] << (24 - 8 * i);
 		int preceedingBits = (w * compIndex) % 8;
-		// Nun schieben wir den Ausschnitt ganz nach vorne
 		dw >>= (32 - preceedingBits - w);
-		// Schließlich entfernen wir störende Bits vor den Daten
 		dw &= (1 << w) - 1;
 		return dw;
 	}
@@ -56,6 +57,9 @@ public class DoubleHashString implements DoubleHashable<String> {
 	 * @return der Hashwert des Schlüssels
 	 */
 	public long hash(String key) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		byte[] bytes = key.getBytes();
 		synchronized (a) {
 			this.a=new ArrayList<>();
@@ -75,13 +79,16 @@ public class DoubleHashString implements DoubleHashable<String> {
 	 * @return der Hashwert des Schlüssels
 	 */
 	public long hashTick(String key) {
+		/*
+		 * Ist aus Loesung Blatt04 Hashstring
+		 */
 		byte[] bytes = key.getBytes();
 		synchronized (a) {
 			this.a=new ArrayList<>();
 			while ((a.size() * w + 7) / 8 < bytes.length)
 				a.add((long) random.nextInt(size));
 		}
-		long hash = LongStream.range(0, key.length()).map(i -> extract((int) i, bytes) * a.get((int) i)).sum() % size;
+		long hash = LongStream.range(0, key.length()).map(i -> extract((int) i, bytes) * a.get((int) i)).sum() % (size-1);
 		return hash;
 	}
 }

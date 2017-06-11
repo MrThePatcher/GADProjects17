@@ -100,8 +100,7 @@ public class DoubleHashInt implements DoubleHashable<Integer> {
 		/*
 		 * anpassen von modulo und es muss mit i multipliziert werden aber 'i' mul kommt dann wsl ausserhalb dieser klasse
 		 */
-		long hash = LongStream.range(0, (bytes.length * 4)).map(i -> extract((int) i, bytes) * a.get((int) i)).sum()
-				% (size-1);
+		long hash = LongStream.range(0, (bytes.length * 4)).map(i -> extract((int) i, bytes) * a.get((int) i)).sum() % (size-1);
 		return hash;
 	}
 
